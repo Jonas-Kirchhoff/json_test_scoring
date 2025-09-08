@@ -69,7 +69,11 @@ def is_unit_test(testcase: ET.Element) -> bool:
 
 def get_all_xml_files(directory: str = '.') -> list[str]:
     result = []
-    content = os.listdir(directory)
+    try:
+        content = os.listdir(directory)
+    except FileNotFoundError as e:
+        print(e)
+        return result
     for entry in content:
         if os.path.isdir(directory+'/'+entry):
             result = result + get_all_xml_files(directory+'/'+entry)
@@ -135,6 +139,7 @@ junit_logs = get_all_xml_files("./my_artifacts/")
 
 #extract data
 for junit_log in junit_logs:
+    print(junit_log)
     tree = ET.parse(junit_log)
     file_root = tree.getroot()
     testsuite = next(file_root.iter('testsuite'), None)

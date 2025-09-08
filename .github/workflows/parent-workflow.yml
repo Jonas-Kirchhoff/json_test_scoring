@@ -1,10 +1,11 @@
 name: Parent Workflow
 
 on: 
+  pull_request:
   push: 
     branches:
       - main
-      - store_test_results
+      - experimental
 
 permissions:
   contents: write
@@ -20,6 +21,14 @@ jobs:
     uses: ./.github/workflows/ubuntu.yml
     with:
       artifact_id: "ubuntu-${{ github.sha }}"
+      
+  experimental_workflow:
+    name: Run experimental workflow
+    needs: [ubuntu]
+    uses: ./.github/workflows/experimental_workflow.yml
+    with:
+      artifact_id: "ubuntu-${{ github.sha }}"
+
 
   collect_artifacts_non_pr:
     name: "Collect Results & Deploy"
