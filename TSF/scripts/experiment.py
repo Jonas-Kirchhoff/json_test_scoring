@@ -20,14 +20,17 @@ else:
         print("Is Scheiße, wa?")
     if True:
         # our result table can be read
-        tests = ["moin", "test_class_lexer"]
+        tests = ["moin", "test-class_lexer"]
         score = 0.0
         expected_tests = len(tests)
         warnings = []
         for test in tests:
             command = f"SELECT COUNT(*) FROM {table} WHERE name = ?"
-            cnt = cursor.execute(command, (test,)).fetchone()
+            cnt = cursor.execute(command, (test,)).fetchone()[0]
+            print(test)
+            print(cnt)
             if cnt is None or cnt == 0:
+                print("Moin")
                 warnings.append(Warning(f"Could not find data for test {test}."))
                 continue
             command = f"""
@@ -42,6 +45,6 @@ else:
             if all == 0:
                 score += 1/expected_tests
             else:
-                score += float(passed)/((float(passed)+float(failed))*expected_tests)
+                score += float(passed)/(all*expected_tests)
         print("Toll!")
         print(score)
