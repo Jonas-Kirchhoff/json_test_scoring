@@ -62,7 +62,10 @@ jobs:
 
       - name: Generate trudag report
         run: |
-          trudag score --dump data_store
+          trudag publish --validate --figures --output-dir "TSF/docs/generated" --dump data_store
+          trudag plot -o "TSF/docs/generated/graph.svg"
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       
       - name: Checkout data storage branch
         run: |
@@ -79,4 +82,11 @@ jobs:
         run: |
           git checkout "${{ steps.vars.outputs.branch }}"
           git stash apply
+
+      - name: Upload trudag artifact
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: trudag-report-${{ github.sha }}
+          path: TSF/docs/generated/
+          if-no-files-found: error
       
