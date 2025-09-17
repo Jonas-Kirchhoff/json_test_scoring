@@ -20,73 +20,11 @@ jobs:
         with:
           name: ${{ inputs.artifact_id }}
           path: artifacts/
-
-      - name: Set up Python
-        uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5.6.0
-        with:
-          python-version: '3.11.2'
-
-      # trudag version 2025.7.23
-      - name: Install trudag and dependencies
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y graphviz
-          pip install git+https://gitlab.com/CodethinkLabs/trustable/trustable@cc6b72753e1202951d382f60ff08320f5a957c7b
-
-      - name: Do shite
-        run: |
-          python3 TSF/scripts/experiment.py
-
-      - name: Remember my branch
-        id: vars
-        run: echo "branch=${GITHUB_REF_NAME}" >> "$GITHUB_OUTPUT"
-
-      - name: Fetch data storage branch
-        run: |
-          git config user.name "github-actions[bot]"
-          git config user.email "github-actions[bot]@users.noreply.github.com"
-          git fetch --all
-          git checkout save_historical_data && git pull || git checkout -b save_historical_data
       
-      - name: Load persistent data
+      - name: Process ubuntu-artifact
         run: |
-          if ! git ls-tree --name-only origin/save_historical_data TSF/TrustableScoring.db | grep TSF/TrustableScoring.db; then
-            mkdir -p TSF
-            touch TSF/TrustableScoring.db
-            git add TSF/TrustableScoring.db
-            git commit -m "Initialise persistent data storage"
-            git push origin save_historical_data
-          fi
-          git checkout "${{ steps.vars.outputs.branch }}"
-          git checkout save_historical_data -- TSF/TrustableScoring.db
-
-      - name: Generate trudag report
-        run: |
-          trudag publish --validate --figures --output-dir "TSF/docs/generated" --dump data_store
-          trudag plot -o "TSF/docs/generated/graph.svg"
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      
-      - name: Checkout data storage branch
-        run: |
-          git stash push --include-untracked -- $(git status --porcelain | awk '{print $2}' | grep -v TSF/TrustableScoring.db)
-          git checkout save_historical_data
-
-      - name: Store persistent data
-        run: |
-          git add TSF/TrustableScoring.db
-          git commit -m "Append data storage" || echo "Historical data already up to date."
-          git push origin save_historical_data
-      
-      - name: Recover stash
-        run: |
-          git checkout "${{ steps.vars.outputs.branch }}"
-          git stash apply
-
-      - name: Upload trudag artifact
-        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
-        with:
-          name: trudag-report-${{ github.sha }}
-          path: TSF/docs/generated/
-          if-no-files-found: error
+          cd artifacts/
+          mv ${{ inputs.artifact_id }}/* .
+          rm -rf ${{ inputs.artifact_id }}
+          ls -a
       
