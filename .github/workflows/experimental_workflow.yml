@@ -24,6 +24,7 @@ jobs:
       - name: Process ubuntu-artifact
         run: |
           cd artifacts/
+          ls -a
           mv ${{ inputs.artifact_id }}/* .
           rm -rf ${{ inputs.artifact_id }}
           ls -a
